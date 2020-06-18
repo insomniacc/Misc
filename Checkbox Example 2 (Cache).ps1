@@ -1,13 +1,14 @@
 $adusers = Get-aduser -Filter 'name -like "*"'
 
 foreach($aduser in $adusers){
+    #Check to see if this has previously been checked or not and set the state
     if($aduser.samaccountname -in $cache:checkedusers){
         $checksplat = @{checked = $true}
     }else{
         $checksplat = @{checked = $false}
     }
 
-    #Create a new checkbox
+    #Create a new checkbox - apply our state 'splat' variable
     New-UDCheckbox -Id "CheckboxID_$($aduser.samaccountname)" @checksplat -Label "$($aduser.samaccountname)" -OnChange {
         #Get the state
         if((Get-UDElement -Id "CheckboxID_$($aduser.samaccountname)").Attributes["checked"]){
@@ -29,7 +30,7 @@ foreach($aduser in $adusers){
     }
 }
 
-#Output so you can see whats being added/removed from the array:
+#Output so you can see whats being added/removed from the array, remove the empty/dummy entries we put into our variable:
 new-udelement -tag div -AutoRefresh -RefreshInterval 1 -endpoint {
     new-udhtml -markup "<br><br>List:<br> $(($cache:checkedusers |? { $_ -notlike ''}) -join "<br>")"
 }
