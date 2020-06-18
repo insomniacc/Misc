@@ -1,4 +1,6 @@
-$adusers = get-aduser -Filter 'name -like "*"'
+$adusers = @()
+$adusers += get-aduser testuser1
+$adusers += get-aduser testuser2
 $session:checkedusers = @("","") #This was done due to this issue: https://forums.universaldashboard.io/t/working-with-arrays-in-endpoints/1691
 
 foreach($aduser in $adusers){
