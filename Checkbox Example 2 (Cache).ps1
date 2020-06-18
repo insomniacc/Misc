@@ -1,4 +1,6 @@
-$adusers = Get-aduser -Filter 'name -like "*"'
+$adusers = @()
+$adusers += get-aduser testuser1
+$adusers += get-aduser testuser2
 
 foreach($aduser in $adusers){
     #Check to see if this has previously been checked or not and set the state
