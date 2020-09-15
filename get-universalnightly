@@ -1,0 +1,41 @@
+function get-universalnightly {
+    param(
+        $url = "https://imsreleases.blob.core.windows.net/universal-nightly",
+        [ValidateSet('win','osx','linux','msi')]$type = "win",
+        [ValidateScript({
+            if( -Not ($_ | Test-Path) ){
+                throw "Folder does not exist"
+            }
+            return $true
+        })][System.IO.FileInfo]$destination
+    )
+
+    switch($type){
+        "win" {
+            $filename = "Universal.win"
+            $extension = "zip"
+        }
+        "osx" {
+            $filename = "Universal.osx"
+            $extension = "zip"
+        }
+        "linux" {
+            $filename = "Universal.linux"
+            $extension = "zip"
+        }
+        "msi" {
+            $filename = "PowerShellUniversal"
+            $extension = "msi"
+        }
+    }
+
+    [xml]$UniversalBuildList  = (Invoke-RestMethod "$url`?restype=container&comp=list") -replace "ï»¿",""
+    [pscustomobject]$UniversalBuildList = $UniversalBuildList.EnumerationResults.Blobs.blob
+
+    $LatestBuildID = ($UniversalBuildList | select @{N='BuildID';E={[int]($_.Name -split "/")[0]}} | sort BuildID -descending | select -first 1).BuildID
+    $downloadpath = ($UniversalBuildList | ?{$_.name -like "$latestbuildID/$filename*$extension"}).url
+
+    try{
+        Invoke-WebRequest $downloadpath -OutFile "$($destination.fullname)\$(($downloadpath -split "/")[-1])"
+    }catch{throw}
+}
